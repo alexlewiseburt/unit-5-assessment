@@ -1,7 +1,6 @@
 require("dotenv").config();
-
 const Sequelize = require("Sequelize");
-console.log(process.env.CONNECTION_STRING);
+
 const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
   dialect: "postgres",
   dialectOptions: {
@@ -30,8 +29,6 @@ module.exports = {
                 rating integer,
                 country_id integer not null references countries(country_id)
             );
-
-            
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -242,4 +239,40 @@ module.exports = {
     sequelize.query("select * from countries;").then((dbRes) => {
       res.status(200).send(dbRes[0]);
     }),
+
+  createCity: (req, res) => {
+    const { name, rating, countryId } = req.body;
+    return sequelize
+      .query(
+        `insert into cities (name, rating, country_id)
+                            values ('${name}', ${rating}, ${countryId});`
+      )
+      .then((dbRes) => {
+        res.status(200).send(dbRes[0]);
+      });
+  },
+
+  getCities: (req, res) =>
+    sequelize
+      .query(
+        `select city_id, cities.name as city, rating, countries.country_id, countries.name as country
+         from cities
+         join countries
+         on cities.country_id = countries.country_id;`
+      )
+      .then((dbRes) => {
+        res.status(200).send(dbRes[0]);
+      }),
+
+  deleteCity: (req, res) => {
+    const { id } = req.params;
+    return sequelize
+      .query(
+        `delete from cities 
+        where city_id = ${id}`
+      )
+      .then((dbRes) => {
+        res.status(200).send(dbRes[0]);
+      });
+  },
 };
